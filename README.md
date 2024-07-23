@@ -3,6 +3,7 @@
 CircleSynth will be a synthesizer and .wav renderer for generating samples to use in
 simple trackers and DAWs like FastTrackerII. Currently just the idea for this project is formed, 
 but it will be web-based in Svelte and include such features as: 
+- live audio playback for adjustment of oscillators
 - custom oscillator creation with frequency-offset-amplitude sinewaves/in series i.e. fourier series
 - simple oscillators such as square, sawtooth, triangle
 - methods of combining simple and custom oscillators
