@@ -1,19 +1,22 @@
 <script lang='ts'>
-    import {SAMPLE_RATE, A_4} from "$lib/audio/constants";
+    import {SAMPLE_RATE, A_4, ALL_FREQS, NOTE_NAMES, WAV_HEADER_CHUNK, BYTES_IN_16b, NUM_OUT_CHANS} from "$lib/audio/constants";
     import { bufferToWav } from "$lib/audio/converter";
     import { square, squareLerpPW, squarePulseWidth } from "$lib/audio/oscillator";
     import InfoGrid from "$lib/components/InfoGrid.svelte";
     import { onMount } from 'svelte';
 
-    const seconds: number = 10;
+    const seconds: number = 1;
+    let waveBuffer: Float32Array;
     let soundBuffer: AudioBuffer;
     let audioCtx: AudioContext;
     let source: AudioBufferSourceNode;
     let blobLink: string = 'none';
     let downloader: HTMLAnchorElement;
     let canDownload: boolean = false;
-
     let sampleRate: number = 0;
+    let blobSizeKB: number = 0;
+    let fundamental: number = A_4;
+    let downloadName: string = 'A-4';
 
     onMount(() => {
         const AudioContext = window.AudioContext;
@@ -24,10 +27,8 @@
             audioCtx.sampleRate * seconds,
             audioCtx.sampleRate
         );
-        
-        const waveBuffer = soundBuffer.getChannelData(0);
-        squareLerpPW(A_4, seconds, 0.9, 0.5, waveBuffer);
 
+        waveBuffer = soundBuffer.getChannelData(0);
         sampleRate = audioCtx.sampleRate;
         source = audioCtx.createBufferSource();
 
@@ -36,8 +37,21 @@
             downloader = <HTMLAnchorElement> maybeDownloader;
             canDownload = true;
         } 
+
+        setFundamental(A_4, 'A-4');
     });
 
+    const resetWaveBuffer = () => {
+        waveBuffer = soundBuffer.getChannelData(0);
+    }
+
+    $: {
+        if(waveBuffer !== undefined){
+            resetWaveBuffer();
+            squareLerpPW(fundamental, seconds, 0.9, 0.5, waveBuffer);
+        }
+    }
+    
     const handleButtonPress = () => {
         source = audioCtx.createBufferSource();
         source.buffer = soundBuffer;
@@ -49,10 +63,23 @@
         const wav: Blob = bufferToWav(soundBuffer, audioCtx.sampleRate * seconds);
         const url = window.URL.createObjectURL(wav);
         downloader.href = url;
-        downloader.download = 'file.wav';
+        downloader.download = `${downloadName}.wav`;
         downloader.click();
         window.URL.revokeObjectURL(url);
     }
+
+    const displayFreq = (freq: number) => {
+        return Math.round(freq * 100)/100;
+    }
+
+    const setFundamental = (freq: number, noteName: string) => {
+        fundamental = freq;
+        downloadName = noteName;
+    }
+
+    $: blobSizeKB = audioCtx === undefined 
+        ? 0 
+        : (audioCtx.sampleRate * seconds * BYTES_IN_16b * NUM_OUT_CHANS)/1000;
 </script>
 
 <svelte:window/>
@@ -61,48 +88,104 @@
     <p>Synthesizer Status</p>
 </InfoGrid>
 <InfoGrid>
-    <InfoGrid>
-        <p>Sample Rate</p>
-        <p>{sampleRate}Hz</p>
-        <InfoGrid columns={1}>
-            <p>Current Note</p>
-            <button class='btn-primary' type='button' on:click={handleButtonPress}>Play</button>
+    <InfoGrid columns={1}>
+        <InfoGrid>
+            <p>Sample Rate</p>
+            <p>{sampleRate}Hz</p>
+            <InfoGrid columns={1}>
+                <p>Current Note</p>
+                <button class='btn-primary' type='button' on:click={handleButtonPress}>Play</button>
+            </InfoGrid>
+            <InfoGrid columns={1}>
+                <p>{displayFreq(fundamental)}Hz</p>
+                <div class="dropdown ">
+                    <select name="notes" class="btn btn-secondary">
+                        {#each ALL_FREQS as freq, i}
+                            {#if freq === A_4}
+                                <option value={freq} on:click={() => setFundamental(freq, NOTE_NAMES[i])} selected>{NOTE_NAMES[i]}</option>
+                            {:else}
+                                <option value={freq} on:click={() => setFundamental(freq, NOTE_NAMES[i])}>{NOTE_NAMES[i]}</option>
+                            {/if}
+                        {/each}
+                    </select>
+                </div>
+            </InfoGrid>
         </InfoGrid>
-        <div class="dropdown">
-            <select name="notes">
-                <option value={440}>A-3(220)</option>
-                <option value={440}>A-4(440)</option>
-                <option value={440}>A-5(880)</option>
-            </select>
-        </div>
+        <button type='button' class='btn-primary' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>Download Sample ({blobSizeKB}KB)</button>
     </InfoGrid>
     <p>Waveform</p>
-    <p>Sine Terms</p>
-    <InfoGrid columns={3}>
-        <InfoGrid columns={1}>
-            <p>frequency</p>
-            <p>2000</p>
-        </InfoGrid>
-        <p>offset</p>
-        <p>amplitude</p>
-        <InfoGrid columns={1}>
-            <p>frequency</p>
-            <p>2000</p>
-        </InfoGrid>
-        <p>offset</p>
-        <p>amplitude</p>
-    </InfoGrid>
-    <InfoGrid columns={3}>
-        <p>frequency</p>
-        <p>offset</p>
-        <p>amplitude</p>
-        <p>frequency</p>
-        <p>offset</p>
-        <p>amplitude</p>
-    </InfoGrid>
-    <p>Square Terms</p>
 </InfoGrid>
 
+<InfoGrid columns={1}>
+    <p>Sine Terms</p>
+</InfoGrid>
+<InfoGrid>
+    <p>Initial</p>
+    <p>Final</p>
+    <InfoGrid columns={3}>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+    </InfoGrid>
+    <InfoGrid columns={3}>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+    </InfoGrid>
+</InfoGrid>
 
-<button type='button' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>save wav</button>
+<InfoGrid columns={1}>
+    <p>Square Terms</p>
+</InfoGrid>
+<InfoGrid>
+    <p>Initial</p>
+    <p>Final</p>
+    <InfoGrid columns={3}>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+    </InfoGrid>
+    <InfoGrid columns={3}>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+        <InfoGrid columns={1}>
+            <p>frequency</p>
+            <p>2000</p>
+        </InfoGrid>
+        <p>offset</p>
+        <p>amplitude</p>
+    </InfoGrid>
+</InfoGrid>
+
 <a id='downloader' href={blobLink} style='display: none'>save wav</a>

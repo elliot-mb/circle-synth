@@ -12,6 +12,20 @@ export const WAV_HEADER_CHUNK = 16;
 export const BYTES_IN_INT = 4;
 export const BYTES_IN_16b = 2;
 export const SEMITONE_SPACING = Math.pow(2, 1 / 12);
-export const NOTES = Array.from(Array(9).keys()).map((x, i) => 55 * Math.pow(2, i)); //frequencies of A_1 to A_9
-export const ALL_NOTES = NOTES.map(f => Array.from(Array(12).keys()).map((x, i) => f * Math.pow(SEMITONE_SPACING, i)));
-console.log(ALL_NOTES);
+export const OCTAVES = 8;
+export const A_0 = 27.5;
+export const LOWEST = A_0;
+export const OCTAVE_FREQS = Array.from(Array(OCTAVES).keys())
+    .map((x, i) => LOWEST * Math.pow(2, i)); 
+export const ALL_FREQS = OCTAVE_FREQS
+    .map(f => Array.from(Array(12).keys())
+        .map((x, i) => f * Math.pow(SEMITONE_SPACING, i)))
+    .reduce((xs, ys) => [...xs, ...ys]);
+export const A_BASED_OFFSET = 9; //how many semitones is A-n above C-n
+export const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export const NOTE_NAMES = Array.from(Array(OCTAVES + 1).keys())
+    .map((x, i) => NOTES
+        .map(n => `${n}-${i}`))
+    .reduce((xs, ys) => [...xs, ...ys])
+    .slice(A_BASED_OFFSET);
+

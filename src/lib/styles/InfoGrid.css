@@ -30,6 +30,13 @@
     align-items: center;
 }
 
+.infogrid :global(button) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.25rem;
+    border-radius: 0.25rem;
+}
 
 .infogrid :global(.infogrid){
     border-radius: 0.25rem;
