@@ -9,3 +9,5 @@ export const WAV_HEADER_DATA = 0x61746164;
 export const NIBB_SIZE = 4;
 export const CHAR_SIZE = 8;
 export const WAV_HEADER_CHUNK = 16;
+export const BYTES_IN_INT = 4;
+export const BYTES_IN_16b = 2;

@@ -1,9 +1,11 @@
 // conversion-to-wav related functions go here 
 
-import { CHAR_SIZE, NIBB_SIZE, NUM_OUT_CHANS, WAV_HEADER_CHUNK, WAV_HEADER_DATA, WAV_HEADER_FMT, WAV_HEADER_RIFF, WAV_HEADER_WAVE, WAV_HEADERSIZE } from "$lib/audio/constants";
+import { BYTES_IN_16b, BYTES_IN_INT, CHAR_SIZE, NIBB_SIZE, NUM_OUT_CHANS, WAV_HEADER_CHUNK, WAV_HEADER_DATA, WAV_HEADER_FMT, WAV_HEADER_RIFF, WAV_HEADER_WAVE, WAV_HEADERSIZE } from "$lib/audio/constants";
 
 /**
- * 
+ * neatened up version of the conversion function found at 
+ * https://russellgood.com/how-to-convert-audiobuffer-to-audio-file/
+ * with considerably less magic numbers
  * @param soundBuff 
  * @param len number of samples in the buffer (i.e. its length)
  * @returns blob of type wav
@@ -18,11 +20,11 @@ export const bufferToWav = (soundBuff: AudioBuffer, len: number): Blob => {
 
     const write32b = (data: number): void => {
         view.setUint32(pos, data, true);
-        pos += 4;
+        pos += BYTES_IN_INT;
     }
     const write16b = (data: number): void => {
         view.setUint16(pos, data, true);
-        pos += 2;
+        pos += BYTES_IN_16b;
     }
 
     write32b(WAV_HEADER_RIFF);
