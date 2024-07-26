@@ -63,7 +63,7 @@
     }
 
     const saveWav = () => {
-        const wav: Blob = bufferToWav(arrayBuffer, audioCtx.sampleRate * seconds);
+        const wav: Blob = bufferToWav(arrayBuffer2, audioCtx.sampleRate * seconds);
         const url = window.URL.createObjectURL(wav);
         downloader.href = url;
         downloader.download = 'file.wav';
