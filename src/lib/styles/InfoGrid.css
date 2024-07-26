@@ -26,6 +26,11 @@
     background-color: var(--info);
 }
 
+.infogrid :global(div) {
+    align-items: center;
+}
+
+
 .infogrid :global(.infogrid){
     border-radius: 0.25rem;
     border-style: solid;
