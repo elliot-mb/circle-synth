@@ -2,6 +2,7 @@
     import {SAMPLE_RATE, A_4} from "$lib/audio/constants";
     import { bufferToWav } from "$lib/audio/converter";
     import { square, squareLerpPW, squarePulseWidth } from "$lib/audio/oscillator";
+    import InfoGrid from "$lib/components/InfoGrid.svelte";
     import { onMount } from 'svelte';
 
     const seconds: number = 10;
@@ -56,7 +57,23 @@
 
 <svelte:window/>
 
-<h2>Here is a button to make some noise! @ {sampleRate}Hz sample rate</h2>
+<InfoGrid columns={1}>
+    <p>Synthesizer Status</p>
+</InfoGrid>
+<InfoGrid>
+    <InfoGrid>
+        <p>Sample Rate</p>
+        <p>{sampleRate}Hz</p>
+        <p>Current Note</p>
+        <p>{sampleRate}Hz</p>
+    </InfoGrid>
+    <InfoGrid>
+        <p>Waveform</p>
+        <p>wiggle wiggle</p>
+    </InfoGrid>
+    <p>Sine Terms</p>
+    <p>list</p>
+</InfoGrid>
 <button type='button' on:click={handleButtonPress}>noise</button>
 <button type='button' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>save wav</button>
 <a id='downloader' href={blobLink} style='display: none'>save wav</a>
