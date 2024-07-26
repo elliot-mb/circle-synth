@@ -1,4 +1,4 @@
-# CircleSynth
+# [CircleSynth](https://circlesynth.elliotmb.dev/)
 
 CircleSynth will be a synthesizer and .wav renderer for generating samples to use in
 simple trackers and DAWs like FastTrackerII. Currently just the idea for this project is formed, 
