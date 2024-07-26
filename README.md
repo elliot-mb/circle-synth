@@ -11,3 +11,12 @@ but it will be web-based in Svelte and include such features as:
 - complex custom oscillators where terms in a series of sinewaves may lerp or curve their properties (frequency/offset/amplitude).
 
 All this is in the aim of creating interesting and unique retro-sounding samples for my music and for others to use and export from this web-app too. 
+
+# Current Features 
+- [x] Squarewave generation
+- [x] .wav exporting
+- [ ] Include wave visualisation
+- [ ] Allow user to play different notes
+- [ ] Generate pure sinewaves
+- [ ] Compose generated sinewaves
+- [ ] Customise sinewaves
