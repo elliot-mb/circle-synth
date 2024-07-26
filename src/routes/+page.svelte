@@ -4,7 +4,7 @@
     import { square, squareLerpPW, squarePulseWidth } from "$lib/audio/oscillator";
     import { onMount } from 'svelte';
 
-    const seconds: number = 1;
+    const seconds: number = 10;
     let soundBuffer: AudioBuffer;
     let audioCtx: AudioContext;
     let source: AudioBufferSourceNode;
