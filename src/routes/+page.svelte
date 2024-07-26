@@ -28,7 +28,7 @@
         );
 
         const waveBuffer = arrayBuffer.getChannelData(0);
-        squarePulseWidth(A_4/8, seconds, 0.5, waveBuffer);
+        squarePulseWidth(A_4, seconds, 0.5, waveBuffer);
 
         const waveBuffer2 = arrayBuffer2.getChannelData(0);
         squareLerpPW(A_4, seconds, 0.9, 0.5, waveBuffer2);
