@@ -1,2 +1,13 @@
-export const SAMPLE_RATE = 44100; //44.1KHz
+export const SAMPLE_RATE = 192000; //44.1KHz
 export const A_4 = 440; //Hz (A above middle C, C_4)
+export const NUM_OUT_CHANS = 2;
+export const WAV_HEADERSIZE = 44;
+export const WAV_HEADER_RIFF = 0x46464952;
+export const WAV_HEADER_WAVE = 0x45564157;
+export const WAV_HEADER_FMT = 0x20746d66;
+export const WAV_HEADER_DATA = 0x61746164;
+export const NIBB_SIZE = 4;
+export const CHAR_SIZE = 8;
+export const WAV_HEADER_CHUNK = 16;
+export const BYTES_IN_INT = 4;
+export const BYTES_IN_16b = 2;
