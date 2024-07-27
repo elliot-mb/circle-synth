@@ -15,7 +15,7 @@ All this is in the aim of creating interesting and unique retro-sounding samples
 # Current Features 
 - [x] Squarewave generation
 - [x] .wav exporting
-- [ ] Include wave visualisation
+- [x] Include wave visualisation
 - [ ] Allow user to play different notes
 - [ ] Generate pure sinewaves
 - [ ] Compose generated sinewaves
