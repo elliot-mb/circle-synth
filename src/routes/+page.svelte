@@ -7,6 +7,9 @@
     import LineDisplay from "$lib/components/LineDisplay.svelte";
 
     const seconds: number = 1;
+    const playButton = () => {
+        return playing ? 'Stop' : 'Play';
+    }
     let waveBuffer: Float32Array;
     let soundBuffer: AudioBuffer;
     let audioCtx: AudioContext;
@@ -19,7 +22,9 @@
     let fundamental: number;
     let downloadName: string;
     let noteNumber: number = 48;
-    let msStart: number;
+    let playing: boolean = false;
+    let playButtonText: string = playButton();
+    let elapsedSeconds: number = 0;
 
     let drawBuffer: number[] = [];
 
@@ -59,12 +64,31 @@
             }
         }
     }
-    
-    const handleButtonPress = () => {
-        source = audioCtx.createBufferSource();
-        source.buffer = soundBuffer;
-        source.connect(audioCtx.destination);
+
+    const queryElapsedTime = () => {
+        const maybeElapsed = audioCtx.getOutputTimestamp().contextTime;
+        elapsedSeconds = maybeElapsed === undefined ? 0 : maybeElapsed;
+        if(playing) requestAnimationFrame(queryElapsedTime);
+    }
+
+    const playOnRepeat = () => {
+        queryElapsedTime();
+        source.onended = () => {
+            if(playing) playOnRepeat();
+        }
         source.start();
+    }
+
+    const handleButtonPress = () => {
+        playing = !playing;
+        playButtonText = playButton();
+        if(playing) {
+            source = audioCtx.createBufferSource();
+            source.buffer = soundBuffer;
+            source.connect(audioCtx.destination);
+            playOnRepeat();
+        }
+        if(!playing) source.stop();
     }
 
     const saveWav = () => {
@@ -118,12 +142,12 @@
                 </select>
             </div>
             <p>{displayFreq(fundamental)}Hz</p>
-            <button class='btn-primary' type='button' on:click={handleButtonPress}>Play</button>
+            <button class='btn-primary' type='button' on:click={handleButtonPress}>{playButtonText}</button>
 
         </InfoGrid>
         <button type='button' class='btn-primary' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>Download Sample ({blobSizeKB}KB)</button>
     </InfoGrid>
-    <LineDisplay data={drawBuffer} zoom={10} offset={0}></LineDisplay>
+    <LineDisplay data={drawBuffer} zoom={fundamental/seconds} offset={elapsedSeconds/seconds}></LineDisplay>
 </InfoGrid>
 
 <InfoGrid columns={1}>
