@@ -15,6 +15,8 @@
     let source: AudioBufferSourceNode;
     let zoom: number = 1;
     let playing: boolean = false;
+    let time: number = 0;//ms
+    let startTime: number = 0;//ms
 
     $: {
         fundamental; //update data with fundamental
@@ -32,6 +34,7 @@
 
     const playOnRepeat = () => {
         makeAudioBufferNode();
+        startTime = time;
         source.start();
         source.onended = () => {
             if(playing) { 
@@ -46,7 +49,8 @@
         if(playing) {
             playOnRepeat();
         }
-        //else if(!playing && source !== null ) source.stop();
+        else if(!playing && source !== null ){
+        }
     }
 
     import { onMount } from "svelte";
@@ -64,18 +68,23 @@
         if(maybeCanvas !== null){
             const canvasPtr = <HTMLCanvasElement> document.querySelector('canvas');
             ctx = canvasPtr.getContext('2d')!;
-            drawDataLoop();
+            drawDataLoop(0);
         }
     });
 
     $: step = setStep(data);
 
-    const drawDataLoop = (): void => {
-        const offset = elapsedSeconds/seconds;
+    const drawDataLoop = (timestamp: number): void => {
+        time = timestamp;
+        elapsedSeconds = (timestamp - startTime)/1000;
+        const waves = seconds/fundamental;
+        const offset = playing ? Math.floor((elapsedSeconds/seconds)/waves)*waves : 0; 
+        //round to the nearest whole wave so we get a smooth looking wave even
+        //with uneven framerate ^^
         ctx.fillStyle = '#343a40';
         ctx.fillRect(0, 0, WIDTH, HEIGHT); 
         ctx.strokeStyle = '#f8f9fa';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.moveTo(0 - (offset * WIDTH * zoom), (DRAW_HEIGHT * data[0]) + HEIGHT / 2);
         ctx.beginPath();
         data.forEach((x, i) => ctx.lineTo(i * step - (offset * WIDTH * zoom), (DRAW_HEIGHT * x) + HEIGHT / 2));
