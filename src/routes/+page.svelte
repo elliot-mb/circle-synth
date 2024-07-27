@@ -15,8 +15,9 @@
     let canDownload: boolean = false;
     let sampleRate: number = 0;
     let blobSizeKB: number = 0;
-    let fundamental: number = A_4;
-    let downloadName: string = 'A-4';
+    let fundamental: number;
+    let downloadName: string;
+    let noteNumber: number = 48;
 
     onMount(() => {
         const AudioContext = window.AudioContext;
@@ -37,8 +38,6 @@
             downloader = <HTMLAnchorElement> maybeDownloader;
             canDownload = true;
         } 
-
-        setFundamental(A_4, 'A-4');
     });
 
     const resetWaveBuffer = () => {
@@ -72,10 +71,15 @@
         return Math.round(freq * 100)/100;
     }
 
-    const setFundamental = (freq: number, noteName: string) => {
-        fundamental = freq;
-        downloadName = noteName;
+    $: {
+        fundamental = ALL_FREQS[noteNumber];
+        downloadName = NOTE_NAMES[noteNumber];
     }
+
+    // const setFundamental = (freq: number, noteName: string) => {
+    //     fundamental = freq;
+    //     downloadName = noteName;
+    // }
 
     $: blobSizeKB = audioCtx === undefined 
         ? 0 
@@ -99,12 +103,12 @@
             <InfoGrid columns={1}>
                 <p>{displayFreq(fundamental)}Hz</p>
                 <div class="dropdown ">
-                    <select name="notes" class="btn btn-secondary">
+                    <select name="notes" class="btn btn-secondary" bind:value={noteNumber}>
                         {#each ALL_FREQS as freq, i}
                             {#if freq === A_4}
-                                <option value={freq} on:click={() => setFundamental(freq, NOTE_NAMES[i])} selected>{NOTE_NAMES[i]}</option>
+                                <option value={i} selected>{NOTE_NAMES[i]}</option>
                             {:else}
-                                <option value={freq} on:click={() => setFundamental(freq, NOTE_NAMES[i])}>{NOTE_NAMES[i]}</option>
+                                <option value={i} >{NOTE_NAMES[i]}</option>
                             {/if}
                         {/each}
                     </select>
