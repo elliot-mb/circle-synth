@@ -5,6 +5,7 @@
     import InfoGrid from "$lib/components/InfoGrid.svelte";
     import { onMount } from 'svelte';
     import LineDisplay from "$lib/components/LineDisplay.svelte";
+    import SoundDisplay from "$lib/components/SoundDisplay.svelte";
 
     const seconds: number = 1;
     const playButton = () => {
@@ -65,30 +66,18 @@
         }
     }
 
-    const queryElapsedTime = () => {
-        const maybeElapsed = audioCtx.getOutputTimestamp().contextTime;
-        elapsedSeconds = maybeElapsed === undefined ? 0 : maybeElapsed;
-        if(playing) requestAnimationFrame(queryElapsedTime);
-    }
-
     const playOnRepeat = () => {
-        queryElapsedTime();
         source.onended = () => {
             if(playing) playOnRepeat();
         }
         source.start();
     }
 
+    let toggle = (playing: boolean) => {};
     const handleButtonPress = () => {
         playing = !playing;
-        playButtonText = playButton();
-        if(playing) {
-            source = audioCtx.createBufferSource();
-            source.buffer = soundBuffer;
-            source.connect(audioCtx.destination);
-            playOnRepeat();
-        }
-        if(!playing) source.stop();
+        console.log(playing);
+        toggle(playing);
     }
 
     const saveWav = () => {
@@ -147,7 +136,13 @@
         </InfoGrid>
         <button type='button' class='btn-primary' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>Download Sample ({blobSizeKB}KB)</button>
     </InfoGrid>
-    <LineDisplay data={drawBuffer} zoom={fundamental/seconds} offset={elapsedSeconds/seconds}></LineDisplay>
+    <SoundDisplay 
+        fundamental={fundamental} 
+        seconds={seconds} 
+        audioCtx={audioCtx}
+        soundBuffer={soundBuffer}
+        bind:toggle={toggle}>
+    </SoundDisplay>
 </InfoGrid>
 
 <InfoGrid columns={1}>
