@@ -4,6 +4,7 @@
     import { square, squareLerpPW, squarePulseWidth } from "$lib/audio/oscillator";
     import InfoGrid from "$lib/components/InfoGrid.svelte";
     import { onMount } from 'svelte';
+    import LineDisplay from "$lib/components/LineDisplay.svelte";
 
     const seconds: number = 1;
     let waveBuffer: Float32Array;
@@ -18,6 +19,9 @@
     let fundamental: number;
     let downloadName: string;
     let noteNumber: number = 48;
+    let msStart: number;
+
+    let drawBuffer: number[] = [];
 
     onMount(() => {
         const AudioContext = window.AudioContext;
@@ -47,7 +51,12 @@
     $: {
         if(waveBuffer !== undefined){
             resetWaveBuffer();
+            //generate wave
             squareLerpPW(fundamental, seconds, 0.9, 0.5, waveBuffer);
+            drawBuffer = [];
+            for(let i = 0; i < waveBuffer.length; i++){
+                drawBuffer.push(waveBuffer[i]);
+            }
         }
     }
     
@@ -96,28 +105,25 @@
         <InfoGrid>
             <p>Sample Rate</p>
             <p>{sampleRate}Hz</p>
-            <InfoGrid columns={1}>
-                <p>Current Note</p>
-                <button class='btn-primary' type='button' on:click={handleButtonPress}>Play</button>
-            </InfoGrid>
-            <InfoGrid columns={1}>
-                <p>{displayFreq(fundamental)}Hz</p>
-                <div class="dropdown ">
-                    <select name="notes" class="btn btn-secondary" bind:value={noteNumber}>
-                        {#each ALL_FREQS as freq, i}
-                            {#if freq === A_4}
-                                <option value={i} selected>{NOTE_NAMES[i]}</option>
-                            {:else}
-                                <option value={i} >{NOTE_NAMES[i]}</option>
-                            {/if}
-                        {/each}
-                    </select>
-                </div>
-            </InfoGrid>
+            <p>Current Note</p>
+            <div class="dropdown ">
+                <select name="notes" class="btn btn-secondary" bind:value={noteNumber}>
+                    {#each ALL_FREQS as freq, i}
+                        {#if freq === A_4}
+                            <option value={i} selected>{NOTE_NAMES[i]}</option>
+                        {:else}
+                            <option value={i} >{NOTE_NAMES[i]}</option>
+                        {/if}
+                    {/each}
+                </select>
+            </div>
+            <p>{displayFreq(fundamental)}Hz</p>
+            <button class='btn-primary' type='button' on:click={handleButtonPress}>Play</button>
+
         </InfoGrid>
         <button type='button' class='btn-primary' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>Download Sample ({blobSizeKB}KB)</button>
     </InfoGrid>
-    <p>Waveform</p>
+    <LineDisplay data={drawBuffer} zoom={10} offset={0}></LineDisplay>
 </InfoGrid>
 
 <InfoGrid columns={1}>
