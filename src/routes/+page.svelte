@@ -4,8 +4,13 @@
     import { square, squareLerpPW, squarePulseWidth } from "$lib/audio/oscillator";
     import InfoGrid from "$lib/components/InfoGrid.svelte";
     import { onMount } from 'svelte';
+    import LineDisplay from "$lib/components/LineDisplay.svelte";
+    import SoundDisplay from "$lib/components/SoundDisplay.svelte";
 
     const seconds: number = 1;
+    const playButton = () => {
+        return playing ? 'Stop' : 'Play';
+    }
     let waveBuffer: Float32Array;
     let soundBuffer: AudioBuffer;
     let audioCtx: AudioContext;
@@ -15,8 +20,14 @@
     let canDownload: boolean = false;
     let sampleRate: number = 0;
     let blobSizeKB: number = 0;
-    let fundamental: number = A_4;
-    let downloadName: string = 'A-4';
+    let fundamental: number;
+    let downloadName: string;
+    let noteNumber: number = 48;
+    let playing: boolean = false;
+    let playButtonText: string = playButton();
+    let elapsedSeconds: number = 0;
+
+    let drawBuffer: number[] = [];
 
     onMount(() => {
         const AudioContext = window.AudioContext;
@@ -37,8 +48,6 @@
             downloader = <HTMLAnchorElement> maybeDownloader;
             canDownload = true;
         } 
-
-        setFundamental(A_4, 'A-4');
     });
 
     const resetWaveBuffer = () => {
@@ -48,15 +57,27 @@
     $: {
         if(waveBuffer !== undefined){
             resetWaveBuffer();
+            //generate wave
             squareLerpPW(fundamental, seconds, 0.9, 0.5, waveBuffer);
+            drawBuffer = [];
+            for(let i = 0; i < waveBuffer.length; i++){
+                drawBuffer.push(waveBuffer[i]);
+            }
         }
     }
-    
-    const handleButtonPress = () => {
-        source = audioCtx.createBufferSource();
-        source.buffer = soundBuffer;
-        source.connect(audioCtx.destination);
+
+    const playOnRepeat = () => {
+        source.onended = () => {
+            if(playing) playOnRepeat();
+        }
         source.start();
+    }
+
+    let toggle = (playing: boolean) => {};
+    const handleButtonPress = () => {
+        playing = !playing;
+        console.log(playing);
+        toggle(playing);
     }
 
     const saveWav = () => {
@@ -72,10 +93,15 @@
         return Math.round(freq * 100)/100;
     }
 
-    const setFundamental = (freq: number, noteName: string) => {
-        fundamental = freq;
-        downloadName = noteName;
+    $: {
+        fundamental = ALL_FREQS[noteNumber];
+        downloadName = NOTE_NAMES[noteNumber];
     }
+
+    // const setFundamental = (freq: number, noteName: string) => {
+    //     fundamental = freq;
+    //     downloadName = noteName;
+    // }
 
     $: blobSizeKB = audioCtx === undefined 
         ? 0 
@@ -92,28 +118,31 @@
         <InfoGrid>
             <p>Sample Rate</p>
             <p>{sampleRate}Hz</p>
-            <InfoGrid columns={1}>
-                <p>Current Note</p>
-                <button class='btn-primary' type='button' on:click={handleButtonPress}>Play</button>
-            </InfoGrid>
-            <InfoGrid columns={1}>
-                <p>{displayFreq(fundamental)}Hz</p>
-                <div class="dropdown ">
-                    <select name="notes" class="btn btn-secondary">
-                        {#each ALL_FREQS as freq, i}
-                            {#if freq === A_4}
-                                <option value={freq} on:click={() => setFundamental(freq, NOTE_NAMES[i])} selected>{NOTE_NAMES[i]}</option>
-                            {:else}
-                                <option value={freq} on:click={() => setFundamental(freq, NOTE_NAMES[i])}>{NOTE_NAMES[i]}</option>
-                            {/if}
-                        {/each}
-                    </select>
-                </div>
-            </InfoGrid>
+            <p>Current Note</p>
+            <div class="dropdown ">
+                <select name="notes" class="btn btn-secondary" bind:value={noteNumber}>
+                    {#each ALL_FREQS as freq, i}
+                        {#if freq === A_4}
+                            <option value={i} selected>{NOTE_NAMES[i]}</option>
+                        {:else}
+                            <option value={i} >{NOTE_NAMES[i]}</option>
+                        {/if}
+                    {/each}
+                </select>
+            </div>
+            <p>{displayFreq(fundamental)}Hz</p>
+            <button class='btn-primary' type='button' on:click={handleButtonPress}>{playButtonText}</button>
+
         </InfoGrid>
         <button type='button' class='btn-primary' style='display: {canDownload ? 'block' : 'none'};' on:click={saveWav}>Download Sample ({blobSizeKB}KB)</button>
     </InfoGrid>
-    <p>Waveform</p>
+    <SoundDisplay 
+        fundamental={fundamental} 
+        seconds={seconds} 
+        audioCtx={audioCtx}
+        soundBuffer={soundBuffer}
+        bind:toggle={toggle}>
+    </SoundDisplay>
 </InfoGrid>
 
 <InfoGrid columns={1}>

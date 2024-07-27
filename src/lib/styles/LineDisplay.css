@@ -1,0 +1,5 @@
+canvas {
+    background-color: var(--dark); 
+    border-radius: 0.25rem;
+    margin: 0.25rem;
+}
